@@ -1,0 +1,16 @@
+dist/
+build/
+.idea/
+*.pyc
+build
+devel
+OUT/
+output
+*.ver
+*.pyc
+*.log
+*.AppImage
+*.bin
+__pycache__/
+**/.vscode
+**/.vs
