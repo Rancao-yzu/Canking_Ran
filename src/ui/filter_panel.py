@@ -44,13 +44,10 @@ class FilterPanel(ttk.LabelFrame):
         list_frame.columnconfigure(0, weight=1)
 
         self.id_listbox = tk.Listbox(list_frame, height=4,
-                                     bg=gui_style.BG_INPUT,
-                                     fg=gui_style.TEXT_PRIMARY,
-                                     selectbackground=gui_style.BLUE,
-                                     selectforeground="#FFFFFF",
                                      font=gui_style.FONT_MONO,
                                      borderwidth=0,
                                      highlightthickness=0)
+        gui_style.style_native_widget(self.id_listbox)
         scrollbar = ttk.Scrollbar(list_frame, orient=tk.VERTICAL, command=self.id_listbox.yview)
         self.id_listbox.configure(yscrollcommand=scrollbar.set)
         self.id_listbox.grid(row=0, column=0, sticky="nsew")

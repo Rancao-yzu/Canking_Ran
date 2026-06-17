@@ -33,10 +33,10 @@ class ReceivePanel(ttk.LabelFrame):
         toolbar = ttk.Frame(self)
         toolbar.pack(fill=tk.X, pady=(0, 4))
 
-        self.clear_btn = ttk.Button(toolbar, text="清空全部", style="LightOrange.TButton")
+        self.clear_btn = ttk.Button(toolbar, text="清空全部", style="Secondary.TButton")
         self.clear_btn.pack(side=tk.LEFT, padx=(0, 6))
 
-        self.group_btn = ttk.Button(toolbar, text="折叠相同ID", style="LightOrange.TButton")
+        self.group_btn = ttk.Button(toolbar, text="折叠相同ID", style="Secondary.TButton")
         self.group_btn.pack(side=tk.LEFT, padx=(0, 6))
 
         self.msg_count_label = ttk.Label(toolbar, text="报文: 0 条",
