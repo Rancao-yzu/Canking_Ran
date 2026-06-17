@@ -325,7 +325,8 @@ class MainWindow:
                 self.statusbar.configure(text=f"DBC 循环发送: 0x{can_id:X}")
 
             elif mode == "循环随机":
-                dlc = len(self.dbc_loader.db.get_message_by_frame_id(can_id).length)
+                msg_obj = self.dbc_loader.db.get_message_by_frame_id(can_id)
+                dlc = msg_obj.length if msg_obj else 8
                 cb = lambda cid, d, fd=is_fd: self._add_sent_message(cid, d, fd)
                 self.sender.start_cyclic_random(can_id, dlc, sp.get_period_ms(),
                                                 is_extended, is_fd, on_send=cb)
