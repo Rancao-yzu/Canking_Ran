@@ -26,7 +26,7 @@ class MainWindow:
     def __init__(self, root: tk.Tk):
         self.root = root
         self.root.title("Canking_Ran - Kvaser CAN 工具")
-        self.root.geometry("1280x800")
+        self.root.geometry("1280x880")
         self.root.configure(bg=gui_style.BG_BASE)
         gui_style.apply_style(self.root)
 
@@ -58,31 +58,51 @@ class MainWindow:
         self._setup_notebook()
 
         # 底部状态栏
-        self.statusbar = ttk.Label(self.root,
-                                   text="就绪 | 先加载 DBC 文件并连接 Kvaser 设备",
-                                   style="Status.TLabel")
-        self.statusbar.pack(fill=tk.X, side=tk.BOTTOM)
+        status_frame = tk.Frame(self.root, bg=gui_style.BG_CARD, highlightbackground=gui_style.BORDER_LIGHT, highlightthickness=1)
+        status_frame.pack(fill=tk.X, side=tk.BOTTOM)
+        self.statusbar = tk.Label(status_frame,
+                                   text="  就绪  |  先加载 DBC 文件并连接 Kvaser 设备",
+                                   font=("Microsoft YaHei", 8),
+                                   fg=gui_style.TEXT_SECONDARY, bg=gui_style.BG_CARD,
+                                   anchor=tk.W, padx=10, pady=5)
+        self.statusbar.pack(fill=tk.X)
 
     def _setup_titlebar(self):
-        """顶部标题栏 - 连接状态指示"""
-        bar = ttk.Frame(self.root)
-        bar.pack(fill=tk.X, padx=8, pady=(6, 0))
+        """顶部标题栏 - 品牌感设计"""
+        bar = tk.Frame(self.root, bg=gui_style.BG_CARD, highlightbackground=gui_style.BORDER_LIGHT, highlightthickness=1)
+        bar.pack(fill=tk.X, padx=5, pady=(5, 0))
 
-        ttk.Label(bar, text="Canking_Ran", font=("Microsoft YaHei", 13, "bold"),
-                  foreground=gui_style.BLUE).pack(side=tk.LEFT)
+        # 左侧橙色品牌色块
+        brand_strip = tk.Canvas(bar, width=4, height=32, bg=gui_style.BG_CARD, highlightthickness=0)
+        brand_strip.pack(side=tk.LEFT, padx=(10, 8), pady=0)
+        brand_strip.create_rectangle(0, 0, 4, 32, fill=gui_style.BLUE, outline="")
 
-        self.connection_indicator = tk.Canvas(bar, width=12, height=12,
-                                              bg=gui_style.BG_BASE, highlightthickness=0)
-        self.connection_indicator.pack(side=tk.LEFT, padx=(12, 4))
-        self._draw_indicator("gray")
+        # 标题
+        title_frame = tk.Frame(bar, bg=gui_style.BG_CARD)
+        title_frame.pack(side=tk.LEFT, pady=8)
+        tk.Label(title_frame, text="Canking @Ran", font=("Microsoft YaHei", 14, "bold"),
+                 fg=gui_style.TEXT_PRIMARY, bg=gui_style.BG_CARD).pack(side=tk.LEFT)
+        tk.Label(title_frame, text="CAN Tool on linux with Kvaser ", font=("Microsoft YaHei", 12),
+                 fg=gui_style.TEXT_SECONDARY, bg=gui_style.BG_CARD).pack(side=tk.LEFT, padx=(6, 0), pady=(4, 0))
 
-        self.connection_label = ttk.Label(bar, text="未连接",
-                                          style="Secondary.TLabel")
+        # 右侧状态区
+        right_frame = tk.Frame(bar, bg=gui_style.BG_CARD)
+        right_frame.pack(side=tk.RIGHT, padx=12, pady=0)
+
+        self.connection_indicator = tk.Canvas(right_frame, width=10, height=10,
+                                              bg=gui_style.BG_CARD, highlightthickness=0)
+        self.connection_indicator.pack(side=tk.LEFT, padx=(0, 5))
+        self._draw_indicator("#B0B0BB")
+
+        self.connection_label = tk.Label(right_frame, text="未连接",
+                                          font=("Microsoft YaHei", 8),
+                                          fg=gui_style.TEXT_SECONDARY, bg=gui_style.BG_CARD)
         self.connection_label.pack(side=tk.LEFT)
 
-        self.msg_counter_label = ttk.Label(bar, text="",
-                                           style="Secondary.TLabel")
-        self.msg_counter_label.pack(side=tk.RIGHT)
+        self.msg_counter_label = tk.Label(right_frame, text="",
+                                           font=("Microsoft YaHei", 8),
+                                           fg=gui_style.TEXT_SECONDARY, bg=gui_style.BG_CARD)
+        self.msg_counter_label.pack(side=tk.RIGHT, padx=(20, 0))
 
     def _draw_indicator(self, color):
         c = self.connection_indicator
@@ -229,7 +249,7 @@ class MainWindow:
         cp.set_status(f"已连接{fd_str}: 通道{channel}")
         self._draw_indicator(gui_style.GREEN)
         self.connection_label.configure(text=f"已连接 | 通道 {channel}{fd_str}",
-                                        foreground=gui_style.GREEN)
+                                        fg=gui_style.GREEN)
         self.statusbar.configure(text=f"已连接 Kvaser 通道 {channel}")
 
     def _on_disconnect(self):
@@ -242,7 +262,7 @@ class MainWindow:
         cp.set_status("已断开")
         self._draw_indicator("gray")
         self.connection_label.configure(text="未连接",
-                                        foreground=gui_style.TEXT_SECONDARY)
+                                        fg=gui_style.TEXT_SECONDARY)
         self.statusbar.configure(text="已断开连接")
 
     def _on_mode_changed(self, event=None):

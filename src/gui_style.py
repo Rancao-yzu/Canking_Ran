@@ -86,7 +86,7 @@ BORDER_RADIUS_LG  = 10   # 大圆角 (面板)
 FONT_MONO    = ("Consolas", 10)
 FONT_BODY    = ("Microsoft YaHei", 9)
 FONT_SMALL   = ("Microsoft YaHei", 8)
-FONT_HEADING = ("Microsoft YaHei", 11, "bold")
+FONT_HEADING = ("Microsoft YaHei", 13, "bold")
 FONT_TREEVIEW = ("Consolas", 10)
 FONT_SECTION = ("Microsoft YaHei", 10, "bold")
 
@@ -105,16 +105,17 @@ def apply_style(root: tk.Tk):
     # --- 框架 ---
     style.configure("TFrame", background=BG_CARD)
 
-    # --- Labelframe: 扁平卡片 ---
+    # --- Labelframe: 精致卡片 ---
     style.configure("Card.TLabelframe",
                     background=BG_CARD,
-                    bordercolor=BG_CARD,
-                    relief="flat",
-                    borderwidth=0)
+                    bordercolor=BORDER_LIGHT,
+                    relief="solid",
+                    borderwidth=1)
     style.configure("Card.TLabelframe.Label",
                     background=BG_CARD,
                     foreground=BLUE,
-                    font=FONT_SECTION)
+                    font=("Microsoft YaHei", 10, "bold"),
+                    padding=(10, 6))
 
     # --- 基础按钮 (TButton) ---
     style.configure("TButton",
