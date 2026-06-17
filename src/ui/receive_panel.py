@@ -166,7 +166,15 @@ class ReceivePanel(ttk.LabelFrame):
                 self.msg_tree.delete(oldest)
                 self._msg_count -= 1
 
-        fd_prefix = "[FD] " if data.get("is_fd") else ""
+        is_fd = data.get("is_fd", False)
+        bitrate_switch = data.get("bitrate_switch", False)
+        if is_fd and bitrate_switch:
+            fd_prefix = "[FDB] "
+        elif is_fd:
+            fd_prefix = "[FD] "
+        else:
+            fd_prefix = ""
+        
         msg_id_hex = f"{fd_prefix}0x{data['id']:X}"
         iid = f"msg_{self._msg_count}_{data['id']}_{time.time()}"
         parent = self.msg_tree.insert("", tk.END, iid=iid,
@@ -182,7 +190,15 @@ class ReceivePanel(ttk.LabelFrame):
     def _add_grouped(self, data: dict):
         """折叠模式：相同 CAN ID 合并为一行, 信号子行点击展开时懒解码"""
         can_id = data["id"]
-        fd_prefix = "[FD] " if data.get("is_fd") else ""
+        is_fd = data.get("is_fd", False)
+        bitrate_switch = data.get("bitrate_switch", False)
+        if is_fd and bitrate_switch:
+            fd_prefix = "[FDB] "
+        elif is_fd:
+            fd_prefix = "[FD] "
+        else:
+            fd_prefix = ""
+        
         msg_id_hex = f"{fd_prefix}0x{can_id:X}"
 
         if can_id in self._group_data:
