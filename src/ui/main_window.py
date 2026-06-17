@@ -66,14 +66,14 @@ class MainWindow:
     def _setup_titlebar(self):
         """顶部标题栏 - 连接状态指示"""
         bar = ttk.Frame(self.root)
-        bar.pack(fill=tk.X, padx=5, pady=(5, 0))
+        bar.pack(fill=tk.X, padx=8, pady=(6, 0))
 
-        ttk.Label(bar, text="Canking_Ran", font=gui_style.FONT_HEADING,
+        ttk.Label(bar, text="Canking_Ran", font=("Microsoft YaHei", 13, "bold"),
                   foreground=gui_style.BLUE).pack(side=tk.LEFT)
 
-        self.connection_indicator = tk.Canvas(bar, width=10, height=10,
+        self.connection_indicator = tk.Canvas(bar, width=12, height=12,
                                               bg=gui_style.BG_BASE, highlightthickness=0)
-        self.connection_indicator.pack(side=tk.LEFT, padx=(10, 3))
+        self.connection_indicator.pack(side=tk.LEFT, padx=(12, 4))
         self._draw_indicator("gray")
 
         self.connection_label = ttk.Label(bar, text="未连接",
@@ -87,7 +87,7 @@ class MainWindow:
     def _draw_indicator(self, color):
         c = self.connection_indicator
         c.delete("all")
-        c.create_oval(1, 1, 9, 9, fill=color, outline=color)
+        c.create_oval(2, 2, 10, 10, fill=color, outline="")
 
     def _setup_sidebar(self):
         """左侧边栏 - 配置 + 筛选"""

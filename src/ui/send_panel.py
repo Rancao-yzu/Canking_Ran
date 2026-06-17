@@ -26,10 +26,10 @@ class SendPanel(ttk.Frame):
 
     def _setup_ui(self):
         # 顶部工具栏
-        top = ttk.Frame(self, padding=(10, 8))
+        top = ttk.Frame(self, padding=(10, 8), style="TFrame")
         top.pack(fill=tk.X)
 
-        ttk.Label(top, text="发送模式").pack(side=tk.LEFT, padx=(0, 4))
+        ttk.Label(top, text="发送模式", font=gui_style.FONT_BODY).pack(side=tk.LEFT, padx=(0, 4))
         self.send_mode_var = tk.StringVar(value="单次")
         ttk.Combobox(top, textvariable=self.send_mode_var, width=8,
                      state="readonly", values=["单次", "循环", "循环随机"]).pack(side=tk.LEFT, padx=(0, 12))
@@ -40,7 +40,7 @@ class SendPanel(ttk.Frame):
 
         ttk.Label(top, text="周期(ms)").pack(side=tk.LEFT, padx=(0, 4))
         self.period_var = tk.StringVar(value="100")
-        ttk.Entry(top, textvariable=self.period_var, width=6).pack(side=tk.LEFT, padx=(0, 12))
+        ttk.Entry(top, textvariable=self.period_var, width=7).pack(side=tk.LEFT, padx=(0, 12))
 
         self.send_btn = ttk.Button(top, text="发送", style="Primary.TButton")
         self.send_btn.pack(side=tk.LEFT, padx=(0, 4))
@@ -77,12 +77,9 @@ class SendPanel(ttk.Frame):
         list_frame.columnconfigure(0, weight=1)
 
         self.msg_listbox = tk.Listbox(list_frame, height=8,
-                                      bg=gui_style.BG_INPUT,
-                                      fg=gui_style.TEXT_PRIMARY,
-                                      selectbackground=gui_style.BLUE,
-                                      selectforeground="#FFFFFF",
                                       font=gui_style.FONT_MONO,
                                       borderwidth=0, highlightthickness=0)
+        gui_style.style_native_widget(self.msg_listbox)
         scrollbar = ttk.Scrollbar(list_frame, orient=tk.VERTICAL, command=self.msg_listbox.yview)
         self.msg_listbox.configure(yscrollcommand=scrollbar.set)
         self.msg_listbox.grid(row=0, column=0, sticky="nsew")
@@ -119,11 +116,11 @@ class SendPanel(ttk.Frame):
 
         ttk.Label(self._raw_frame, text="数据 (Hex)").grid(row=1, column=0, sticky=tk.NW, pady=(10, 0))
         self.data_text = tk.Text(self._raw_frame, height=4, width=50,
-                                 bg=gui_style.BG_INPUT, fg=gui_style.TEXT_PRIMARY,
                                  insertbackground=gui_style.TEXT_PRIMARY,
                                  font=gui_style.FONT_MONO,
                                  borderwidth=0, highlightthickness=0,
-                                 padx=8, pady=6)
+                                 padx=10, pady=8)
+        gui_style.style_native_widget(self.data_text)
         self.data_text.insert("1.0", "00 00 00 00 00 00 00 00")
         self.data_text.grid(row=1, column=1, columnspan=3, sticky="nsew", padx=4, pady=(10, 0))
         self._raw_frame.columnconfigure(1, weight=1)
