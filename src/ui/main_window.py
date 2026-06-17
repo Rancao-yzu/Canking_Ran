@@ -49,7 +49,7 @@ class MainWindow:
 
         # 左右分割主区域 (可拖拽)
         self._main_pane = ttk.PanedWindow(self.root, orient=tk.HORIZONTAL)
-        self._main_pane.pack(fill=tk.BOTH, expand=True, padx=5, pady=(0, 5))
+        self._main_pane.pack(fill=tk.BOTH, expand=True)
 
         # 左侧边栏
         self._setup_sidebar()
@@ -68,41 +68,85 @@ class MainWindow:
         self.statusbar.pack(fill=tk.X)
 
     def _setup_titlebar(self):
-        """顶部标题栏 - 品牌感设计"""
-        bar = tk.Frame(self.root, bg=gui_style.BG_CARD, highlightbackground=gui_style.BORDER_LIGHT, highlightthickness=1)
-        bar.pack(fill=tk.X, padx=5, pady=(5, 0))
+        """顶部标题栏 - 品牌感设计（浅橙色渐变背景）"""
+        # 外层 Frame 用于边框（无边距，贴边）
+        outer = tk.Frame(self.root, bg=gui_style.BORDER_LIGHT)
+        outer.pack(fill=tk.X)
 
-        # 左侧橙色品牌色块
-        brand_strip = tk.Canvas(bar, width=4, height=32, bg=gui_style.BG_CARD, highlightthickness=0)
-        brand_strip.pack(side=tk.LEFT, padx=(10, 8), pady=0)
-        brand_strip.create_rectangle(0, 0, 4, 32, fill=gui_style.BLUE, outline="")
+        # Canvas 作为标题栏主体，可绘制渐变
+        self._title_canvas = tk.Canvas(outer, height=44, bg=gui_style.BG_CARD,
+                                        highlightthickness=0, borderwidth=0)
+        self._title_canvas.pack(fill=tk.X, expand=True)
+        # 绑定 resize 重绘渐变
+        self._title_canvas.bind("<Configure>", self._on_titlebar_resize)
 
-        # 标题
-        title_frame = tk.Frame(bar, bg=gui_style.BG_CARD)
-        title_frame.pack(side=tk.LEFT, pady=8)
+        # --- 使用 Canvas 内嵌窗口放置所有控件 ---
+        # 渐变起止色（与 _draw_gradient 保持一致）
+        title_gradient_start = "#FFC992"  # 左侧微暖橙
+        title_gradient_est   = "#FFCF9E"  # 右侧浅暖橙
+        title_gradient_end   = "#FFE9D2"  # 右侧
+
+        # 左侧品牌色块
+        self._brand_canvas = tk.Canvas(self._title_canvas, width=4, height=32,
+                                        bg=title_gradient_start, highlightthickness=0, borderwidth=0)
+        self._brand_canvas.create_rectangle(0, 0, 4, 32, fill=gui_style.BLUE, outline="")
+        self._title_canvas.create_window(14, 22, window=self._brand_canvas, anchor=tk.W)
+
+        # 标题文字（融入左侧渐变起始色）
+        title_frame = tk.Frame(self._title_canvas, bg=title_gradient_start)
         tk.Label(title_frame, text="Canking @Ran", font=("Microsoft YaHei", 14, "bold"),
-                 fg=gui_style.TEXT_PRIMARY, bg=gui_style.BG_CARD).pack(side=tk.LEFT)
+                 fg=gui_style.TEXT_PRIMARY, bg=title_gradient_start).pack(side=tk.LEFT)
         tk.Label(title_frame, text="CAN Tool on linux with Kvaser ", font=("Microsoft YaHei", 12),
-                 fg=gui_style.TEXT_SECONDARY, bg=gui_style.BG_CARD).pack(side=tk.LEFT, padx=(6, 0), pady=(4, 0))
+                 fg=gui_style.TEXT_SECONDARY, bg=title_gradient_est).pack(side=tk.LEFT, padx=(6, 0), pady=(4, 0))
+        self._title_canvas.create_window(30, 22, window=title_frame, anchor=tk.W)
 
-        # 右侧状态区
-        right_frame = tk.Frame(bar, bg=gui_style.BG_CARD)
-        right_frame.pack(side=tk.RIGHT, padx=12, pady=0)
+        # 右侧状态区（融入右侧渐变末色）
+        right_frame = tk.Frame(self._title_canvas, bg=title_gradient_end)
 
         self.connection_indicator = tk.Canvas(right_frame, width=10, height=10,
-                                              bg=gui_style.BG_CARD, highlightthickness=0)
+                                              bg=title_gradient_end, highlightthickness=0, borderwidth=0)
         self.connection_indicator.pack(side=tk.LEFT, padx=(0, 5))
         self._draw_indicator("#B0B0BB")
 
         self.connection_label = tk.Label(right_frame, text="未连接",
                                           font=("Microsoft YaHei", 8),
-                                          fg=gui_style.TEXT_SECONDARY, bg=gui_style.BG_CARD)
+                                          fg=gui_style.TEXT_SECONDARY, bg=title_gradient_end)
         self.connection_label.pack(side=tk.LEFT)
 
         self.msg_counter_label = tk.Label(right_frame, text="",
                                            font=("Microsoft YaHei", 8),
-                                           fg=gui_style.TEXT_SECONDARY, bg=gui_style.BG_CARD)
+                                           fg=gui_style.TEXT_SECONDARY, bg=title_gradient_end)
         self.msg_counter_label.pack(side=tk.RIGHT, padx=(20, 0))
+        # 右侧区域靠右放置 (在 resize 时重新定位)
+        self._title_right_frame = right_frame
+        self._title_canvas.create_window(0, 22, window=right_frame, anchor=tk.E, tags=("right",))
+
+    def _on_titlebar_resize(self, event):
+        """标题栏 resize 时重绘渐变并重新定位右侧控件"""
+        self._draw_gradient(self._title_canvas)
+        # 右侧区域贴右边缘
+        self._title_canvas.coords("right", event.width - 12, 22)
+
+    def _draw_gradient(self, canvas: tk.Canvas):
+        """在 Canvas 上绘制左到右的浅橙色渐变"""
+        canvas.delete("gradient")
+        width = canvas.winfo_width()
+        height = canvas.winfo_height()
+        if width < 10 or height < 4:
+            return
+
+        # 渐变: 左侧微暖橙 → 右侧浅暖橙
+        start_r, start_g, start_b = 255, 201, 146   # #FFC992
+        end_r, end_g, end_b   = 255, 233, 210       # #FFE9D2
+
+        step = 2
+        for x in range(0, width, step):
+            ratio = x / max(width - 1, 1)
+            r = int(start_r + (end_r - start_r) * ratio)
+            g = int(start_g + (end_g - start_g) * ratio)
+            b = int(start_b + (end_b - start_b) * ratio)
+            color = f"#{r:02X}{g:02X}{b:02X}"
+            canvas.create_rectangle(x, 0, x + step, height, fill=color, outline="", tags="gradient")
 
     def _draw_indicator(self, color):
         c = self.connection_indicator
