@@ -9,6 +9,7 @@ output
 *.ver
 *.pyc
 *.log
+*.asc
 *.AppImage
 *.bin
 __pycache__/

@@ -11,7 +11,7 @@ class ConfigPanel(ttk.LabelFrame):
     """Kvaser CAN 配置面板"""
 
     def __init__(self, parent):
-        super().__init__(parent, text="设备配置", style="Card.TLabelframe", padding=10)
+        super().__init__(parent, text="  设备配置", style="Card.TLabelframe", padding=10)
         self.columnconfigure(0, weight=1)
         self._setup_fields()
         self._setup_buttons()
@@ -58,6 +58,7 @@ class ConfigPanel(ttk.LabelFrame):
         self.fd_bitrate_combo.pack(fill=tk.X, pady=(0, 8))
 
     def _setup_buttons(self):
+        # 连接/断开按钮
         btn_row = ttk.Frame(self)
         btn_row.pack(fill=tk.X, pady=(4, 0))
         self.connect_btn = ttk.Button(btn_row, text="连接设备", style="Primary.TButton")
@@ -82,6 +83,7 @@ class ConfigPanel(ttk.LabelFrame):
 
     def is_fd_mode(self):
         return self.mode_var.get() == "CAN FD"
+
 
     def set_status(self, text):
         self.status_var.set(text)

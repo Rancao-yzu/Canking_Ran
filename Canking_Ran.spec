@@ -123,6 +123,18 @@ a = Analysis(
         "fonttools",
         "kiwisolver",
         "pyparsing",
+        "Flask",
+        "Flask-Cors",
+        "canlib",
+        "qt-gui",
+        "jupyter-events",
+        "jupyter-lsp",
+        "PyPDF2",
+
+        "rosbag",
+        "roslib",
+        "rqt-bag-plugins",
+
     ],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,

@@ -5,6 +5,7 @@ Kvaser CAN 工具主界面
 """
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
+import os
 
 import gui_style
 
@@ -36,6 +37,7 @@ class MainWindow:
         self.can_filter = CanFilter()
         self.receiver = MessageReceiver(self.bus_manager, self.dbc_loader)
         self.sender = MessageSender(self.bus_manager, self.dbc_loader)
+        self.recording_path = None
 
         # ---- UI ----
         self._setup_ui()
@@ -113,6 +115,17 @@ class MainWindow:
                                           fg=gui_style.TEXT_SECONDARY, bg=title_gradient_end)
         self.connection_label.pack(side=tk.LEFT)
 
+        # 记录状态指示器
+        self.record_indicator = tk.Canvas(right_frame, width=10, height=10,
+                                           bg=title_gradient_end, highlightthickness=0, borderwidth=0)
+        self.record_indicator.pack(side=tk.LEFT, padx=(15, 5))
+        self._draw_record_indicator("gray")
+        
+        self.record_label = tk.Label(right_frame, text="未记录",
+                                     font=("Microsoft YaHei", 8),
+                                     fg=gui_style.TEXT_SECONDARY, bg=title_gradient_end)
+        self.record_label.pack(side=tk.LEFT)
+
         self.msg_counter_label = tk.Label(right_frame, text="",
                                            font=("Microsoft YaHei", 8),
                                            fg=gui_style.TEXT_SECONDARY, bg=title_gradient_end)
@@ -153,6 +166,11 @@ class MainWindow:
         c.delete("all")
         c.create_oval(2, 2, 10, 10, fill=color, outline="")
 
+    def _draw_record_indicator(self, color):
+        c = self.record_indicator
+        c.delete("all")
+        c.create_oval(2, 2, 10, 10, fill=color, outline="")
+
     def _setup_sidebar(self):
         """左侧边栏 - 配置 + 筛选"""
         sidebar = ttk.Frame(self._main_pane)
@@ -179,6 +197,7 @@ class MainWindow:
         self.receive_panel = ReceivePanel(self.notebook)
         self.receive_panel.clear_btn.configure(command=self._on_clear_messages)
         self.receive_panel.group_btn.configure(command=self._on_toggle_grouping)
+        self.receive_panel.record_btn.configure(command=self._on_toggle_record)
         self.notebook.add(self.receive_panel, text="  接收  ")
 
         # ---- 发送 Tab ----
@@ -232,6 +251,17 @@ class MainWindow:
         except Exception as e:
             messagebox.showerror("错误", f"加载 DBC 失败:\n{e}")
 
+    def _on_browse_record(self):
+        """浏览选择报文记录文件"""
+        filepath = filedialog.asksaveasfilename(
+            title="选择报文记录文件",
+            defaultextension=".asc",
+            filetypes=[("ASC 文件", "*.asc"), ("所有文件", "*.*")]
+        )
+        if filepath:
+            self.config_panel.record_path_var.set(filepath)
+            self.recording_path = filepath
+
     def _on_refresh_channels(self):
         try:
             from can.interfaces.kvaser import KvaserBus
@@ -280,7 +310,7 @@ class MainWindow:
                 bitrate=bitrate,
                 data_bitrate=data_bitrate,
                 fd=is_fd,
-                can_filters=self.can_filter.to_can_filters(),
+                # can_filters=self.can_filter.to_can_filters(),  # 移除硬件过滤器，使用软件过滤
             )
         except Exception as e:
             messagebox.showerror("连接失败", str(e))
@@ -318,7 +348,7 @@ class MainWindow:
 
     # ==================== 发送回调 ====================
 
-    def _add_sent_message(self, can_id, data, is_fd):
+    def _add_sent_message(self, can_id, data, is_fd, is_extended=False):
         """将发送的报文也加入到接收面板展示 (不预解码)"""
         from datetime import datetime
         raw_hex = " ".join(f"{b:02X}" for b in data)
@@ -331,6 +361,8 @@ class MainWindow:
             "data": list(data),          # 原始字节, 供懒解码
             "signals": [],               # 点击展开时懒解码
             "is_fd": is_fd,
+            "bitrate_switch": is_fd,     # 添加BRS标志，与发送时的设置一致
+            "is_extended": is_extended,
         }
         self.receive_panel.add_message(entry)
 
@@ -364,7 +396,7 @@ class MainWindow:
                     # 收集发送的报文
                     data = self.dbc_loader.encode_message(can_id, signals)
                     if data:
-                        self._add_sent_message(can_id, data, is_fd)
+                        self._add_sent_message(can_id, data, is_fd, is_extended)
                     sp.send_status_var.set(f"DBC 发送 0x{can_id:X}")
                     self.statusbar.configure(text=f"DBC 发送: 0x{can_id:X}")
                 except Exception as e:
@@ -380,7 +412,7 @@ class MainWindow:
                 except Exception as e:
                     messagebox.showwarning("提示", f"DBC 编码失败: {e}")
                     return
-                cb = lambda cid, d, fd=is_fd: self._add_sent_message(cid, d, fd)
+                cb = lambda cid, d, fd=is_fd, ext=is_extended: self._add_sent_message(cid, d, fd, ext)
                 self.sender.start_cyclic(can_id, data, sp.get_period_ms(),
                                          is_extended, is_fd, on_send=cb)
                 sp.send_status_var.set(f"循环中 0x{can_id:X} @{sp.get_period_ms()}ms")
@@ -391,7 +423,7 @@ class MainWindow:
             elif mode == "循环随机":
                 msg_obj = self.dbc_loader.db.get_message_by_frame_id(can_id)
                 dlc = msg_obj.length if msg_obj else 8
-                cb = lambda cid, d, fd=is_fd: self._add_sent_message(cid, d, fd)
+                cb = lambda cid, d, fd=is_fd, ext=is_extended: self._add_sent_message(cid, d, fd, ext)
                 self.sender.start_cyclic_random(can_id, dlc, sp.get_period_ms(),
                                                 is_extended, is_fd, on_send=cb)
                 sp.send_status_var.set(f"随机循环中 0x{can_id:X}")
@@ -413,7 +445,7 @@ class MainWindow:
                     return
                 try:
                     self.sender.send_once(can_id, data, is_extended, is_fd)
-                    self._add_sent_message(can_id, data, is_fd)
+                    self._add_sent_message(can_id, data, is_fd, is_extended)
                     sp.send_status_var.set(f"已发送 0x{can_id:X}")
                     self.statusbar.configure(text=f"发送: 0x{can_id:X}")
                 except Exception as e:
@@ -424,7 +456,7 @@ class MainWindow:
                 if data is None:
                     messagebox.showwarning("提示", "数据格式无效")
                     return
-                cb = lambda cid, d, fd=is_fd: self._add_sent_message(cid, d, fd)
+                cb = lambda cid, d, fd=is_fd, ext=is_extended: self._add_sent_message(cid, d, fd, ext)
                 self.sender.start_cyclic(can_id, data, sp.get_period_ms(),
                                          is_extended, is_fd, on_send=cb)
                 sp.send_status_var.set(f"循环中 0x{can_id:X} @{sp.get_period_ms()}ms")
@@ -434,7 +466,7 @@ class MainWindow:
 
             elif mode == "循环随机":
                 dlc = sp.get_raw_dlc()
-                cb = lambda cid, d, fd=is_fd: self._add_sent_message(cid, d, fd)
+                cb = lambda cid, d, fd=is_fd, ext=is_extended: self._add_sent_message(cid, d, fd, ext)
                 self.sender.start_cyclic_random(can_id, dlc, sp.get_period_ms(),
                                                 is_extended, is_fd, on_send=cb)
                 sp.send_status_var.set(f"随机循环中 0x{can_id:X}")
@@ -475,6 +507,39 @@ class MainWindow:
         self.receive_panel.clear()
         self.statusbar.configure(text="报文列表已清空")
 
+    def _on_toggle_record(self):
+        """切换报文记录状态"""
+        if self.bus_manager.is_recording():
+            # 停止记录
+            self.bus_manager.stop_recording()
+            self._draw_record_indicator("gray")
+            self.record_label.configure(text="未记录", fg=gui_style.TEXT_SECONDARY)
+            self.receive_panel.record_btn.configure(text="开启报文记录器")
+            self.statusbar.configure(text="已停止报文记录")
+        else:
+            # 开始记录
+            if not self.bus_manager.is_connected:
+                messagebox.showwarning("提示", "请先连接 CAN 总线")
+                return
+                
+            # 始终使用自动生成的默认路径
+            from datetime import datetime
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            record_path = f"can_log_{timestamp}.asc"
+            
+            try:
+                self.bus_manager.start_recording(record_path)
+                self._draw_record_indicator(gui_style.GREEN)
+                self.record_label.configure(text="记录中", fg=gui_style.GREEN)
+                self.receive_panel.record_btn.configure(text="关闭报文记录器")
+                self.statusbar.configure(text=f"开始记录到文件: {record_path}")
+            except Exception as e:
+                messagebox.showerror("记录失败", str(e))
+                self._draw_record_indicator("gray")
+                self.record_label.configure(text="未记录", fg=gui_style.TEXT_SECONDARY)
+                self.receive_panel.record_btn.configure(text="开启报文记录器")
+                self.statusbar.configure(text="报文记录启动失败")
+
     def _on_toggle_grouping(self):
         """切换折叠/逐条显示模式"""
         self.receive_panel.toggle_grouping()
@@ -508,6 +573,8 @@ class MainWindow:
                 data = self.receiver.msg_queue.get_nowait()
                 if self.can_filter.match(data["id"]):
                     self.receive_panel.add_message(data)
+                    
+                    # 记录功能由 BusRecorder 透明代理处理，无需手动写入
         except queue.Empty:
             pass
 

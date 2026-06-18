@@ -39,6 +39,9 @@ class ReceivePanel(ttk.LabelFrame):
         self.group_btn = ttk.Button(toolbar, text="折叠相同ID", style="Secondary.TButton")
         self.group_btn.pack(side=tk.LEFT, padx=(0, 6))
 
+        self.record_btn = ttk.Button(toolbar, text="开启报文记录器", style="Primary.TButton")
+        self.record_btn.pack(side=tk.LEFT, padx=(0, 6))
+
         self.msg_count_label = ttk.Label(toolbar, text="报文: 0 条",
                                          style="Secondary.TLabel")
         self.msg_count_label.pack(side=tk.LEFT)
@@ -168,14 +171,23 @@ class ReceivePanel(ttk.LabelFrame):
 
         is_fd = data.get("is_fd", False)
         bitrate_switch = data.get("bitrate_switch", False)
-        if is_fd and bitrate_switch:
-            fd_prefix = "[FDB] "
-        elif is_fd:
-            fd_prefix = "[FD] "
-        else:
-            fd_prefix = ""
+        is_extended = data.get("is_extended", False)
         
-        msg_id_hex = f"{fd_prefix}0x{data['id']:X}"
+        # 构建前缀
+        prefix_parts = []
+        if is_fd and bitrate_switch:
+            prefix_parts.append("[FDB]")
+        elif is_fd:
+            prefix_parts.append("[FD]")
+            
+        if is_extended:
+            prefix_parts.append("[EXT]")
+        else:
+            prefix_parts.append("[STD]")
+            
+        prefix = " ".join(prefix_parts) + " " if prefix_parts else ""
+        
+        msg_id_hex = f"{prefix}0x{data['id']:X}"
         iid = f"msg_{self._msg_count}_{data['id']}_{time.time()}"
         parent = self.msg_tree.insert("", tk.END, iid=iid,
                                       values=(msg_id_hex, data["time"], data["dlc"], data["raw"]),
@@ -192,12 +204,16 @@ class ReceivePanel(ttk.LabelFrame):
         can_id = data["id"]
         is_fd = data.get("is_fd", False)
         bitrate_switch = data.get("bitrate_switch", False)
+        is_extended = data.get("is_extended", False)
+        
+        # 构建前缀：帧类型 + FD/BRS信息
+        frame_type = "[EXT]" if is_extended else "[STD]"
         if is_fd and bitrate_switch:
-            fd_prefix = "[FDB] "
+            fd_prefix = f"{frame_type}[FDB] "
         elif is_fd:
-            fd_prefix = "[FD] "
+            fd_prefix = f"{frame_type}[FD] "
         else:
-            fd_prefix = ""
+            fd_prefix = f"{frame_type} "
         
         msg_id_hex = f"{fd_prefix}0x{can_id:X}"
 

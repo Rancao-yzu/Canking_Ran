@@ -59,6 +59,7 @@ class MessageReceiver:
         raw_hex = " ".join(f"{b:02X}" for b in msg.data)
         is_fd = bool(msg.is_fd) if hasattr(msg, "is_fd") else False
         bitrate_switch = bool(msg.bitrate_switch) if hasattr(msg, "bitrate_switch") else False
+        is_extended = bool(msg.is_extended_id) if hasattr(msg, "is_extended_id") else False
 
         self._queue.put({
             "id": msg.arbitration_id,
@@ -69,4 +70,5 @@ class MessageReceiver:
             "signals": [],               # 不再预解码
             "is_fd": is_fd,
             "bitrate_switch": bitrate_switch,
+            "is_extended": is_extended,
         })

@@ -37,6 +37,7 @@ class MessageSender:
             data=data,
             is_extended_id=is_extended,
             is_fd=is_fd,
+            bitrate_switch=is_fd,
         )
         self._bus_mgr.send(msg)
 
@@ -169,6 +170,7 @@ class SendWorker:
                 data=data,
                 is_extended_id=self._is_extended,
                 is_fd=self._is_fd,
+                bitrate_switch=self._is_fd,
             )
             try:
                 self._bus_mgr.send(msg)

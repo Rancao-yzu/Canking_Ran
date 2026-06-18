@@ -11,7 +11,7 @@ class FilterPanel(ttk.LabelFrame):
     """CAN ID 筛选面板"""
 
     def __init__(self, parent):
-        super().__init__(parent, text="CAN ID 筛选", style="Card.TLabelframe", padding=10)
+        super().__init__(parent, text="  CAN ID 筛选", style="Card.TLabelframe", padding=10)
         self._setup_ui()
 
     def _setup_ui(self):
