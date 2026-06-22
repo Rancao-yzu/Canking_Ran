@@ -310,8 +310,10 @@ class MainWindow:
                 bitrate=bitrate,
                 data_bitrate=data_bitrate,
                 fd=is_fd,
-                # can_filters=self.can_filter.to_can_filters(),  # 移除硬件过滤器，使用软件过滤
+                can_filters=self.can_filter.to_can_filters(),  # 移除硬件过滤器，使用软件过滤
             )
+
+            print( self.can_filter.to_can_filters() )
         except Exception as e:
             messagebox.showerror("连接失败", str(e))
             return

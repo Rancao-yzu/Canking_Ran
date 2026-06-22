@@ -10,7 +10,6 @@ class CanFilter:
 
     def __init__(self):
         self._ids = set()         # 允许的 CAN ID 集合（int）
-        self._id_ranges = []      # 允许的 ID 范围 [(start, end), ...]
         self._enabled = False     # 筛选是否启用
 
     # ==================== 添加/移除 ====================
@@ -23,11 +22,6 @@ class CanFilter:
         """
         self._ids.add(can_id)
 
-    def add_range(self, start: int, end: int):
-        """添加 CAN ID 范围 [start, end]"""
-        if start <= end:
-            self._id_ranges.append((start, end))
-
     def remove_id(self, can_id: int):
         """移除单个 CAN ID"""
         self._ids.discard(can_id)
@@ -35,7 +29,6 @@ class CanFilter:
     def clear(self):
         """清空所有筛选条件"""
         self._ids.clear()
-        self._id_ranges.clear()
 
     # ==================== 启用/禁用 ====================
 
@@ -61,12 +54,7 @@ class CanFilter:
         """
         if not self._enabled:
             return True
-        if can_id in self._ids:
-            return True
-        for start, end in self._id_ranges:
-            if start <= can_id <= end:
-                return True
-        return False
+        return can_id in self._ids
 
     def matches(self, msg) -> bool:
         """检查 can.Message 是否通过筛选"""
@@ -81,13 +69,12 @@ class CanFilter:
         
         用于 Bus 初始化时设置硬件过滤。
         """
-        if not self._enabled or (not self._ids and not self._id_ranges):
+        if not self._enabled or not self._ids:
             return None
         filters = []
         for cid in self._ids:
-            filters.append({"can_id": cid, "can_mask": 0x1FFFFFFF})
-        for start, end in self._id_ranges:
-            filters.append({"can_id": start, "can_mask": 0x1FFFFFFF})
+            filters.append({"can_id": cid, "can_mask": 0x7FF, "extended": False})
+            filters.append({"can_id": cid, "can_mask": 0x7FF, "extended": True})
         return filters
 
     # ==================== 查询 ====================
@@ -98,17 +85,10 @@ class CanFilter:
         return self._ids.copy()
 
     @property
-    def ranges(self):
-        """当前筛选的 ID 范围列表"""
-        return self._id_ranges.copy()
-
-    @property
     def count(self):
         """筛选条件数量"""
-        return len(self._ids) + len(self._id_ranges)
+        return len(self._ids)
 
     def __str__(self):
         parts = [f"0x{cid:X}" for cid in sorted(self._ids)]
-        for start, end in self._id_ranges:
-            parts.append(f"0x{start:X}-0x{end:X}")
         return f"CAN ID 筛选 [{', '.join(parts)}]" if parts else "CAN ID 筛选 (无)"
