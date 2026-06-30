@@ -5,7 +5,6 @@ CAN 报文接收器
 
 import threading
 import queue
-import traceback
 from datetime import datetime
 
 from core.can_bus import KvaserBusManager

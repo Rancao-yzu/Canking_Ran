@@ -16,37 +16,13 @@ from tkinter import messagebox
 
 from ui.main_window import MainWindow
 
-
-def check_dependencies():
-    """检查必要依赖"""
-    missing = []
-    try:
-        import can
-    except ImportError:
-        missing.append("python-can")
-    try:
-        import cantools
-    except ImportError:
-        missing.append("cantools")
-    return missing
-
-
 def main():
-    missing = check_dependencies()
 
     root = tk.Tk()
     app = MainWindow(root)
 
     # 窗口关闭回调
     root.protocol("WM_DELETE_WINDOW", app.on_close)
-
-    if missing:
-        root.after(500, lambda: messagebox.showwarning(
-            "缺少依赖",
-            f"缺少以下 Python 库: {', '.join(missing)}\n\n"
-            f"请执行: pip install {' '.join(missing)}\n\n"
-            f"当前仅可查看界面布局，CAN 功能不可用。"
-        ))
 
     root.mainloop()
 

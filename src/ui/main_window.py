@@ -5,8 +5,6 @@ Kvaser CAN 工具主界面
 """
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
-import os
-
 import gui_style
 
 from ui.config_panel import ConfigPanel

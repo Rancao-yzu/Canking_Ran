@@ -4,8 +4,6 @@ Kvaser 连接配置面板 - 扁平暗色风格
 import tkinter as tk
 from tkinter import ttk
 
-import gui_style
-
 
 class ConfigPanel(ttk.LabelFrame):
     """Kvaser CAN 配置面板"""

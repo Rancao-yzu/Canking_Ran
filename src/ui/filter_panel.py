@@ -20,7 +20,7 @@ class FilterPanel(ttk.LabelFrame):
         ttk.Checkbutton(self, text="启用筛选", variable=self.filter_enabled_var).pack(anchor=tk.W, pady=(0, 6))
 
         # 输入 + 添加
-        ttk.Label(self, text="添加 CAN ID (Hex)").pack(anchor=tk.W, pady=(0, 2))
+        ttk.Label(self, text="添加 CAN ID (Hex 需要自行添加0x)").pack(anchor=tk.W, pady=(0, 2))
         add_row = ttk.Frame(self)
         add_row.pack(fill=tk.X, pady=(0, 6))
         self.add_id_var = tk.StringVar()
