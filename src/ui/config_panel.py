@@ -4,6 +4,8 @@ Kvaser 连接配置面板 - 扁平暗色风格
 import tkinter as tk
 from tkinter import ttk
 
+import gui_style
+
 
 class ConfigPanel(ttk.LabelFrame):
     """Kvaser CAN 配置面板"""
@@ -29,7 +31,8 @@ class ConfigPanel(ttk.LabelFrame):
         ch_row = ttk.Frame(self)
         ch_row.pack(fill=tk.X, pady=(0, 8))
         self.channel_var = tk.StringVar()
-        self.channel_combo = ttk.Combobox(ch_row, textvariable=self.channel_var)
+        self.channel_combo = ttk.Combobox(ch_row, textvariable=self.channel_var,font=gui_style.FONT_SMALL)
+        self.winfo_toplevel().option_add("*TCombobox*Listbox.font", gui_style.FONT_SMALL) #控制内部 下拉弹出的列表项字体
         self.channel_combo.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 4))
         self.refresh_btn = ttk.Button(ch_row, text="刷新", style="LightOrange.TButton")
         self.refresh_btn.pack(side=tk.RIGHT)

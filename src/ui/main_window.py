@@ -267,8 +267,9 @@ class MainWindow:
             channels = []
             for i, c in enumerate(ch_list):
                 ch_num = c.get("channel", i)
-                serial = c.get("device_name", "")
-                label = f"{ch_num} - {serial}" if serial else str(ch_num)
+                name = c.get("device_name", "")
+                sn = c.get("serial", "")
+                label = f"{ch_num} - {name} (SN:{sn})" if name else f"{ch_num} (SN:{sn})"
                 channels.append(label)
             if channels:
                 self.config_panel.channel_combo["values"] = channels

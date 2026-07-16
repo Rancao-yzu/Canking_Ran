@@ -85,7 +85,7 @@ BORDER_RADIUS_LG  = 10   # 大圆角 (面板)
 
 FONT_MONO    = ("Consolas", 10)
 FONT_BODY    = ("Microsoft YaHei", 9)
-FONT_SMALL   = ("Microsoft YaHei", 8)
+FONT_SMALL   = ("Microsoft YaHei", 9)
 FONT_HEADING = ("Microsoft YaHei", 13, "bold")
 FONT_TREEVIEW = ("Consolas", 10)
 FONT_SECTION = ("Microsoft YaHei", 10, "bold")
