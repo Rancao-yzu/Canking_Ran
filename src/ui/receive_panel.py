@@ -335,8 +335,11 @@ class ReceivePanel(ttk.LabelFrame):
                     data_bytes = [int(b, 16) for b in parts]
                 else:
                     data_bytes = []
-                # 从 id 列解析 can_id
-                id_text = (values[0] or "").replace("[FD] ", "").replace("0x", "")
+                # 从 id 列解析 can_id — 去掉所有 [TAG] 前缀
+                id_text = (values[0] or "")
+                for tag in ("[FDB]", "[FD]", "[EXT]", "[STD]"):
+                    id_text = id_text.replace(tag, "")
+                id_text = id_text.replace("0x", "").replace(" ", "").strip()
                 try:
                     can_id = int(id_text, 16)
                 except ValueError:
