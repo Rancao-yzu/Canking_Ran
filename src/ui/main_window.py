@@ -490,7 +490,7 @@ class MainWindow:
         if not raw:
             return
         try:
-            cid = int(raw, 16) if raw.lower().startswith("0x") else int(raw)
+            cid = int(raw, 16)
         except ValueError:
             messagebox.showwarning("提示", "CAN ID 格式无效")
             return

@@ -237,7 +237,7 @@ class SendPanel(ttk.Frame):
     def get_raw_can_id(self):
         raw = self.can_id_var.get().strip()
         try:
-            return int(raw, 16) if raw.lower().startswith("0x") else int(raw)
+            return int(raw, 16)
         except ValueError:
             return None
 
