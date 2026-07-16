@@ -14,7 +14,7 @@ Canking_Ran PyInstaller 打包规格
 
 import sys
 from pathlib import Path
-from PyInstaller.utils.hooks import collect_submodules, collect_data_files
+from PyInstaller.utils.hooks import collect_submodules
 
 # ---------- 路径定义 ----------
 ROOT = Path(SPECPATH)      # SPECPATH: spec 文件所在目录
@@ -22,9 +22,9 @@ SRC = ROOT / "src"
 RESOURCES = ROOT / "Resources"
 
 # ---------- 隐藏导入 ----------
-# python-can 动态加载的 backend
-can_hidden = collect_submodules("can.interfaces")
-can_hidden += collect_submodules("can.io")
+# python-can: 只显式导入实际使用的接口和模块，避免与 excludes 冲突
+# 项目实际使用: can.interfaces.kvaser (can_bus.py), can.interfaces.virtual (开发/测试)
+# can.io / can.io.player: ASC 日志记录器 (can.ASCWriter)
 
 # 项目内部包 (确保子模块都被打包)
 project_hidden = (
@@ -66,24 +66,11 @@ a = Analysis(
         "tkinter.scrolledtext",
         # 项目内部
         "gui_style",
-    ] + can_hidden + project_hidden,
+    ] + project_hidden,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
     excludes=[
-        # 剔除不需要的 can 接口以减小体积
-        "can.interfaces.pcan",
-        "can.interfaces.vector",
-        "can.interfaces.socketcan",
-        "can.interfaces.ixxat",
-        "can.interfaces.systec",
-        "can.interfaces.etas",
-        "can.interfaces.slcan",
-        "can.interfaces.usb2can",
-        "can.interfaces.canalystii",
-        "can.interfaces.gs_usb",
-        "can.interfaces.nican",
-        "can.interfaces.serial",
         # 标准库中不用的模块
         "tkinter.test",
         "unittest",
