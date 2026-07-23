@@ -8,7 +8,7 @@ from tkinter import ttk
 
 import gui_style
 
-MAX_MESSAGES = 500
+MAX_MESSAGES = 200
 
 
 class ReceivePanel(ttk.LabelFrame):
@@ -176,13 +176,12 @@ class ReceivePanel(ttk.LabelFrame):
 
     def _add_individual(self, data: dict):
         """逐条模式：每条报文独立一行, 信号子行点击展开时懒解码"""
-        if self._msg_count >= MAX_MESSAGES:
-            children = self.msg_tree.get_children("")
-            if children:
-                oldest = children[0]
-                self._decoded_items.discard(oldest)
-                self.msg_tree.delete(oldest)
-                self._msg_count -= 1
+        children = self.msg_tree.get_children("")
+        if len(children) >= MAX_MESSAGES:
+            oldest = children[0]
+            self._decoded_items.discard(oldest)
+            self.msg_tree.delete(oldest)
+            self._msg_count -= 1
 
         is_fd = data.get("is_fd", False)
         bitrate_switch = data.get("bitrate_switch", False)
@@ -248,17 +247,16 @@ class ReceivePanel(ttk.LabelFrame):
                 self._rebuild_placeholder(group["item"], data)
 
         else:
-            if self._msg_count >= MAX_MESSAGES:
-                children = self.msg_tree.get_children("")
-                if children:
-                    oldest_iid = children[0]
-                    self._decoded_items.discard(oldest_iid)
-                    for cid, g in list(self._group_data.items()):
-                        if g["item"] == oldest_iid:
-                            del self._group_data[cid]
-                            break
-                    self.msg_tree.delete(oldest_iid)
-                    self._msg_count -= 1
+            children = self.msg_tree.get_children("")
+            if len(children) >= MAX_MESSAGES:
+                oldest_iid = children[0]
+                self._decoded_items.discard(oldest_iid)
+                for cid, g in list(self._group_data.items()):
+                    if g["item"] == oldest_iid:
+                        self._msg_count -= g["count"]
+                        del self._group_data[cid]
+                        break
+                self.msg_tree.delete(oldest_iid)
 
             iid = f"grp_{can_id}_{time.time()}"
             parent = self.msg_tree.insert("", tk.END, iid=iid,
