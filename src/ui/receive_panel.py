@@ -74,11 +74,11 @@ class ReceivePanel(ttk.LabelFrame):
         self.msg_tree.column("dlc", width=46, anchor=tk.CENTER)
         self.msg_tree.column("raw", width=520)
 
-        v_scroll = ttk.Scrollbar(tree_frame, orient=tk.VERTICAL, command=self._on_scroll)
+        self.v_scroll = ttk.Scrollbar(tree_frame, orient=tk.VERTICAL, command=self._on_scroll)
         h_scroll = ttk.Scrollbar(tree_frame, orient=tk.HORIZONTAL, command=self.msg_tree.xview)
-        self.msg_tree.configure(yscrollcommand=v_scroll.set, xscrollcommand=h_scroll.set)
+        self.msg_tree.configure(yscrollcommand=self._on_tree_yscroll, xscrollcommand=h_scroll.set)
         self.msg_tree.grid(row=0, column=0, sticky="nsew")
-        v_scroll.grid(row=0, column=1, sticky="ns")
+        self.v_scroll.grid(row=0, column=1, sticky="ns")
         h_scroll.grid(row=1, column=0, sticky="ew")
 
         gui_style.configure_tree_tags(self.msg_tree)
@@ -87,6 +87,14 @@ class ReceivePanel(ttk.LabelFrame):
         self.msg_tree.bind("<<TreeviewOpen>>", self._on_tree_open)
 
     # ---- 滚动控制 ----
+
+    def _on_tree_yscroll(self, first, last):
+        """树视图滚动时更新自动滚动状态 (覆盖鼠标滚轮和拖动滚动条)"""
+        try:
+            self._auto_scroll = (float(last) >= 1.0)
+        except (ValueError, TypeError):
+            pass
+        self.v_scroll.set(first, last)
 
     def _on_scroll(self, *args):
         if args[1]:
@@ -238,8 +246,6 @@ class ReceivePanel(ttk.LabelFrame):
                 self._rebuild_signal_children(group["item"], data)
             else:
                 self._rebuild_placeholder(group["item"], data)
-
-            self.msg_tree.move(group["item"], "", tk.END)
 
         else:
             if self._msg_count >= MAX_MESSAGES:
