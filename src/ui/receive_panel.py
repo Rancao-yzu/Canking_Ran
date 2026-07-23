@@ -202,7 +202,7 @@ class ReceivePanel(ttk.LabelFrame):
         prefix = " ".join(prefix_parts) + " " if prefix_parts else ""
         
         msg_id_hex = f"{prefix}0x{data['id']:X}"
-        iid = f"msg_{self._msg_count}_{data['id']}_{time.time()}"
+        iid = f"msg_{self._msg_count}_{data['id']}_{time.time_ns()}"
         parent = self.msg_tree.insert("", tk.END, iid=iid,
                                       values=(msg_id_hex, data["time"], data["dlc"], data["raw"]),
                                       open=False)
@@ -258,7 +258,7 @@ class ReceivePanel(ttk.LabelFrame):
                         break
                 self.msg_tree.delete(oldest_iid)
 
-            iid = f"grp_{can_id}_{time.time()}"
+            iid = f"grp_{can_id}_{time.time_ns()}"
             parent = self.msg_tree.insert("", tk.END, iid=iid,
                                           values=(msg_id_hex, data["time"], data["dlc"], data["raw"]),
                                           open=False)
