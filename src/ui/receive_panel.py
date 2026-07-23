@@ -46,6 +46,9 @@ class ReceivePanel(ttk.LabelFrame):
         self.pause_btn = ttk.Button(toolbar, text="暂停", style="Secondary.TButton")
         self.pause_btn.pack(side=tk.LEFT, padx=(0, 6))
 
+        self.replay_btn = ttk.Button(toolbar, text="导入回放", style="Secondary.TButton")
+        self.replay_btn.pack(side=tk.LEFT, padx=(0, 6))
+
         self.msg_count_label = ttk.Label(toolbar, text="报文: 0 条",
                                          style="Secondary.TLabel")
         self.msg_count_label.pack(side=tk.LEFT)

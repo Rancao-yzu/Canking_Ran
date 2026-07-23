@@ -197,6 +197,7 @@ class MainWindow:
         self.receive_panel.group_btn.configure(command=self._on_toggle_grouping)
         self.receive_panel.record_btn.configure(command=self._on_toggle_record)
         self.receive_panel.pause_btn.configure(command=self._on_toggle_pause)
+        self.receive_panel.replay_btn.configure(command=self._on_import_replay)
         self.notebook.add(self.receive_panel, text="  接收  ")
 
         # ---- 发送 Tab ----
@@ -508,6 +509,49 @@ class MainWindow:
         """清空报文列表"""
         self.receive_panel.clear()
         self.statusbar.configure(text="报文列表已清空")
+
+    def _on_import_replay(self):
+        """导入 ASC 文件并回放报文"""
+        from datetime import datetime
+        import can
+
+        path = filedialog.askopenfilename(
+            title="选择 ASC 回放文件",
+            filetypes=[("ASC 日志文件", "*.asc"), ("所有文件", "*.*")]
+        )
+        if not path:
+            return
+
+        try:
+            reader = can.ASCReader(path)
+            count = 0
+            for msg in reader:
+                ts = msg.timestamp
+                if isinstance(ts, (int, float)):
+                    t = datetime.fromtimestamp(ts)
+                else:
+                    t = datetime.now()
+                timestamp = t.strftime("%H:%M:%S.%f")[:-3]
+                raw_hex = " ".join(f"{b:02X}" for b in msg.data)
+                is_fd = bool(msg.is_fd) if hasattr(msg, "is_fd") else False
+                bitrate_switch = bool(msg.bitrate_switch) if hasattr(msg, "bitrate_switch") else False
+                is_extended = bool(msg.is_extended_id) if hasattr(msg, "is_extended_id") else False
+
+                self.receiver.msg_queue.put({
+                    "id": msg.arbitration_id,
+                    "time": timestamp,
+                    "dlc": msg.dlc,
+                    "raw": raw_hex,
+                    "data": list(msg.data),
+                    "signals": [],
+                    "is_fd": is_fd,
+                    "bitrate_switch": bitrate_switch,
+                    "is_extended": is_extended,
+                })
+                count += 1
+            self.statusbar.configure(text=f"已导入 {count} 条报文 (来源: {path.split('/')[-1]})")
+        except Exception as e:
+            messagebox.showerror("导入失败", f"读取 ASC 文件失败:\n{e}")
 
     def _on_toggle_record(self):
         """切换报文记录状态"""
