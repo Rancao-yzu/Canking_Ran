@@ -19,7 +19,7 @@ class ReceivePanel(ttk.LabelFrame):
         self._dbc_loader = None
         self._msg_count = 0
         self._auto_scroll = True
-        self._group_enabled = False        # 是否按 CAN ID 折叠
+        self._group_enabled = True         # 默认按 CAN ID 折叠
         self._paused = False              # 界面更新是否暂停
         self._group_data = {}              # {can_id: {"item": iid, "count": N, "data": dict}}
         self._decoded_items = set()        # 已解码的 item iid, 避免重复解码
@@ -37,7 +37,7 @@ class ReceivePanel(ttk.LabelFrame):
         self.clear_btn = ttk.Button(toolbar, text="清空全部", style="Secondary.TButton")
         self.clear_btn.pack(side=tk.LEFT, padx=(0, 6))
 
-        self.group_btn = ttk.Button(toolbar, text="折叠相同ID", style="Secondary.TButton")
+        self.group_btn = ttk.Button(toolbar, text="逐条显示", style="Secondary.TButton")
         self.group_btn.pack(side=tk.LEFT, padx=(0, 6))
 
         self.record_btn = ttk.Button(toolbar, text="开启报文记录器", style="Primary.TButton")
