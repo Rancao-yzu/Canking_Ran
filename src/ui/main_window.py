@@ -196,6 +196,7 @@ class MainWindow:
         self.receive_panel.clear_btn.configure(command=self._on_clear_messages)
         self.receive_panel.group_btn.configure(command=self._on_toggle_grouping)
         self.receive_panel.record_btn.configure(command=self._on_toggle_record)
+        self.receive_panel.pause_btn.configure(command=self._on_toggle_pause)
         self.notebook.add(self.receive_panel, text="  接收  ")
 
         # ---- 发送 Tab ----
@@ -547,6 +548,14 @@ class MainWindow:
         mode = "折叠" if self.receive_panel.group_enabled else "逐条"
         self.statusbar.configure(text=f"显示模式: {mode}")
 
+    def _on_toggle_pause(self):
+        """切换暂停/恢复界面更新"""
+        self.receive_panel.toggle_pause()
+        if self.receive_panel.paused:
+            self.statusbar.configure(text="界面更新: 已暂停")
+        else:
+            self.statusbar.configure(text="界面更新: 已恢复")
+
     def _on_clear_filter(self):
         self.filter_panel.clear_all()
         self.can_filter.clear()
@@ -573,15 +582,18 @@ class MainWindow:
             while True:
                 data = self.receiver.msg_queue.get_nowait()
                 if self.can_filter.match(data["id"]):
-                    self.receive_panel.add_message(data)
-                    
-                    # 记录功能由 BusRecorder 透明代理处理，无需手动写入
+                    if not self.receive_panel.paused:
+                        self.receive_panel.add_message(data)
+                    # 暂停时仍消费队列，仅跳过界面更新
         except queue.Empty:
             pass
 
         count = self.receive_panel.count
-        self.msg_counter_label.configure(
-            text=f"报文: {count} 条" if count > 0 else "")
+        if self.receive_panel.paused:
+            self.msg_counter_label.configure(text=f"报文: {count} 条 [暂停中]")
+        else:
+            self.msg_counter_label.configure(
+                text=f"报文: {count} 条" if count > 0 else "")
 
         self.root.after(50, self._poll_queue)
 

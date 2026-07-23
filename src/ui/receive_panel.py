@@ -20,6 +20,7 @@ class ReceivePanel(ttk.LabelFrame):
         self._msg_count = 0
         self._auto_scroll = True
         self._group_enabled = False        # 是否按 CAN ID 折叠
+        self._paused = False              # 界面更新是否暂停
         self._group_data = {}              # {can_id: {"item": iid, "count": N, "data": dict}}
         self._decoded_items = set()        # 已解码的 item iid, 避免重复解码
         self._setup_ui()
@@ -41,6 +42,9 @@ class ReceivePanel(ttk.LabelFrame):
 
         self.record_btn = ttk.Button(toolbar, text="开启报文记录器", style="Primary.TButton")
         self.record_btn.pack(side=tk.LEFT, padx=(0, 6))
+
+        self.pause_btn = ttk.Button(toolbar, text="暂停", style="Secondary.TButton")
+        self.pause_btn.pack(side=tk.LEFT, padx=(0, 6))
 
         self.msg_count_label = ttk.Label(toolbar, text="报文: 0 条",
                                          style="Secondary.TLabel")
@@ -295,6 +299,20 @@ class ReceivePanel(ttk.LabelFrame):
     @property
     def group_enabled(self):
         return self._group_enabled
+
+    # ==================== 暂停界面更新 ====================
+
+    def toggle_pause(self):
+        """切换暂停更新"""
+        self._paused = not self._paused
+        if self._paused:
+            self.pause_btn.configure(text="恢复")
+        else:
+            self.pause_btn.configure(text="暂停")
+
+    @property
+    def paused(self):
+        return self._paused
 
     @property
     def count(self):
